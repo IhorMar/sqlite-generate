@@ -1,6 +1,7 @@
 name: Deploy demo
 
 on:
+  workflow_dispatch:
   push:
     branches:
     - main
@@ -25,18 +26,14 @@ jobs:
     - name: Install Python dependencies
       run: |
         pip install -e .
-        pip install datasette datasette-publish-now
+        pip install datasette datasette-publish-vercel
     - name: Build database
       run: sqlite-generate demo.db --seed seed --fts --columns=10 --fks=0,3 --pks=0,2
-    - name: Setup Node.js
-      uses: actions/setup-node@v1
-      with:
-        node-version: '12.x'
     - name: Deploy Datasette using Vercel
       env:
         NOW_TOKEN: ${{ secrets.NOW_TOKEN }}
       run: |-
-        datasette publish now demo.db \
+        datasette publish vercel demo.db \
           --token $NOW_TOKEN \
           --project sqlite-generate \
           --title "sqlite-generate demo" \
@@ -44,4 +41,4 @@ jobs:
           --about "simonw/sqlite-generate" \
           --install datasette-block-robots \
           --install datasette-search-all \
-          --public
+          --install datasette-graphql
